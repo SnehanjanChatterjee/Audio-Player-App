@@ -15,10 +15,16 @@ import java.util.ArrayList;
 public class PlaySong extends AppCompatActivity {
     private TextView txtView;
     private ImageView previous, play, pause, next;
-    ArrayList<File> songsList;
     private MediaPlayer mediaPlayer;
     private String currentSongName;
     private Integer position;
+    ArrayList<File> songsList;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopMediaPlayer();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,5 +53,10 @@ public class PlaySong extends AppCompatActivity {
         Uri uri = Uri.parse(songsList.get(position).toString());
         this.mediaPlayer = MediaPlayer.create(this, uri);
         this.mediaPlayer.start();
+    }
+
+    private void stopMediaPlayer() {
+        this.mediaPlayer.stop();
+        this.mediaPlayer.release();
     }
 }
