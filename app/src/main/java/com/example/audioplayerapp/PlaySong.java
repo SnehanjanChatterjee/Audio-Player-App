@@ -101,7 +101,7 @@ public class PlaySong extends AppCompatActivity {
         this.updateSeekBar.interrupt();
     }
 
-    private synchronized void updateSeekbarMovement() {
+    private void updateSeekbarMovement() {
         this.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
