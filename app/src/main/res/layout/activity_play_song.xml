@@ -24,7 +24,7 @@
     <TextView
         android:id="@+id/textView"
         android:layout_width="0dp"
-        android:layout_height="62dp"
+        android:layout_height="55dp"
         android:layout_marginTop="16dp"
         android:ellipsize="marquee"
         android:fadingEdge="horizontal"
@@ -89,11 +89,16 @@
 
     <TextView
         android:id="@+id/artistInfo"
-        android:layout_width="408dp"
-        android:layout_height="51dp"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
         android:gravity="center_horizontal|center_vertical"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:ellipsize="marquee"
+        android:fadingEdge="horizontal"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

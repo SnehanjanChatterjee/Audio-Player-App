@@ -84,6 +84,7 @@ public class PlaySong extends AppCompatActivity {
             String artist = this.getArtist(this.songDirectory);
             if (!artist.isEmpty()) {
                 this.artistInfo.setText(artist);
+                this.artistInfo.setSelected(true);
             }
 
             Bitmap bm = this.loadThumbnail(this.songDirectory);
