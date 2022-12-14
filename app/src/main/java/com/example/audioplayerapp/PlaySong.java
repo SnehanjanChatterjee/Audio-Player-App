@@ -162,6 +162,7 @@ public class PlaySong extends AppCompatActivity {
                     position = songsList.size() - 1;
                 }
                 playCurrentSong();
+                updateSeekbarMovement();
             }
         });
 
@@ -175,6 +176,7 @@ public class PlaySong extends AppCompatActivity {
                     position = 0;
                 }
                 playCurrentSong();
+                updateSeekbarMovement();
             }
         });
 
