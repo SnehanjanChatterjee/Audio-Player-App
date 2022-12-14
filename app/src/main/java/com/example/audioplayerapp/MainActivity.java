@@ -26,9 +26,13 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
+    File rootDirectory, customDirectory;
+    ArrayList<File> songsList;
+    String[] songNames;
     public static final String EXTRA_SONGS_LIST = "com.example.audioplayerapp.songslist";
     public static final String EXTRA_CURRENT_SONG_NAME = "com.example.audioplayerapp.currentSongName";
     public static final String EXTRA_POSITION = "com.example.audioplayerapp.position";
+    public static final String EXTRA_DIRECTORY = "com.example.audioplayerapp.directory";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,23 +74,26 @@ public class MainActivity extends AppCompatActivity {
     private void readSongsFromExtDirectory() {
         Log.d("extStorage", "Dir is: " + Environment.getExternalStorageDirectory());
 
-        File rootDirectory = Environment.getExternalStorageDirectory();
-        File customDirectory = new File(rootDirectory + "/Bollywood Songs");
+        this.rootDirectory = Environment.getExternalStorageDirectory();
+        this.customDirectory = new File(rootDirectory + "/Bollywood Songs");
 
-        ArrayList<File> songsList = fetchSongs(customDirectory);
-
-        String[] songNames = new String[songsList.size()];
+        this.songsList = fetchSongs(customDirectory);
+        this.songNames = new String[songsList.size()];
         for (int i = 0; i < songsList.size(); i++) {
-            songNames[i] = songsList.get(i).getName().replace(".mp3", "");
+            this.songNames[i] = songsList.get(i).getName().replace(".mp3", "");
         }
 
-        displaySongs(songsList, songNames);
+        displaySongs();
+        setEventsOnListItem();
     }
 
-    private void displaySongs(ArrayList<File> songsList, String[] songNames) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, songNames);
-        listView.setAdapter(adapter);
 
+    private void displaySongs() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, this.songNames);
+        listView.setAdapter(adapter);
+    }
+
+    private void setEventsOnListItem() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -103,19 +110,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ArrayList<File> fetchSongs(File directory) {
-        ArrayList<File> songsList = new ArrayList<File>();
+        ArrayList<File> songs = new ArrayList<File>();
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
-                        songsList.addAll(fetchSongs(file));
+                        songs.addAll(fetchSongs(file));
                     } else if (file.getName().endsWith(".mp3") && !file.getName().startsWith(".")) {
-                        songsList.add(file);
+                        songs.add(file);
                     }
                 }
             }
         }
-        return songsList;
+        return songs;
     }
 }

@@ -3,6 +3,9 @@ package com.example.audioplayerapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,15 +13,19 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class PlaySong extends AppCompatActivity {
     private TextView txtView;
+    private TextView artistInfo;
+    private ImageView imageView;
     private ImageView previous, pause, next;
     private MediaPlayer mediaPlayer;
     private String currentSongName;
+    private String songDirectory;
     private Integer position;
     ArrayList<File> songsList;
     SeekBar seekBar;
@@ -28,7 +35,6 @@ public class PlaySong extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopMediaPlayer();
-        this.updateSeekBar.interrupt();
     }
 
     @Override
@@ -44,6 +50,8 @@ public class PlaySong extends AppCompatActivity {
 
     private void initialize() {
         this.txtView = findViewById(R.id.textView);
+        this.artistInfo = findViewById(R.id.artistInfo);
+        this.imageView = findViewById(R.id.imageView);
         this.previous = findViewById(R.id.previous);
         this.next = findViewById(R.id.next);
         this.pause = findViewById(R.id.pause);
@@ -54,8 +62,7 @@ public class PlaySong extends AppCompatActivity {
         this.songsList = (ArrayList) bundle.getParcelableArrayList(MainActivity.EXTRA_SONGS_LIST);
         this.currentSongName = intent.getStringExtra(MainActivity.EXTRA_CURRENT_SONG_NAME);
         this.position = intent.getIntExtra(MainActivity.EXTRA_POSITION, 0);
-
-        // this.txtView.setText(this.currentSongName);
+        // this.songDirectory = this.songsList.get(this.position).getAbsolutePath();
     }
 
     private void playCurrentSong() {
@@ -63,18 +70,38 @@ public class PlaySong extends AppCompatActivity {
         this.mediaPlayer = MediaPlayer.create(this, uri);
         this.mediaPlayer.start();
         this.seekBar.setMax(this.mediaPlayer.getDuration());
+        updateDisplay();
+    }
+
+    private void updateDisplay() {
         String songName = this.songsList.get(this.position).getName().toString().replace(".mp3", "");
         this.txtView.setText(songName);
         this.txtView.setSelected(true);
         this.pause.setImageResource(R.drawable.pause);
+
+        this.songDirectory = this.songsList.get(this.position).getAbsolutePath();
+        try {
+            String artist = this.getArtist(this.songDirectory);
+            if (!artist.isEmpty()) {
+                this.artistInfo.setText(artist);
+            }
+
+            Bitmap bm = this.loadThumbnail(this.songDirectory);
+            if (bm != null) {
+                this.imageView.setImageBitmap(bm);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void stopMediaPlayer() {
         this.mediaPlayer.stop();
         this.mediaPlayer.release();
+        this.updateSeekBar.interrupt();
     }
 
-    private void updateSeekbarMovement() {
+    private synchronized void updateSeekbarMovement() {
         this.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -149,5 +176,25 @@ public class PlaySong extends AppCompatActivity {
                 playCurrentSong();
             }
         });
+
+    }
+
+    public Bitmap loadThumbnail(String absolutePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(absolutePath);
+        byte[] data = retriever.getEmbeddedPicture();
+        retriever.release();
+        if (data == null) {
+            return null;
+        }
+        return BitmapFactory.decodeByteArray(data, 0, data.length);
+    }
+
+    public String getArtist(String absolutePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(absolutePath);
+        String artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        retriever.release();
+        return artist;
     }
 }
