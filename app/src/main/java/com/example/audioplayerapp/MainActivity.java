@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -25,6 +28,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    // CheckBox checkBoxRoot;
+    CheckBox checkBoxDownload, checkBoxBollywood;
+    final String DOWNLOAD = "Download";
+    final String BOLLYWOOD = "Bollywood Songs";
+    Button btn;
     private ListView listView;
     File rootDirectory, customDirectory;
     ArrayList<File> songsList;
@@ -42,9 +50,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listView = findViewById(R.id.listView);
+        this.listView = findViewById(R.id.listView);
+        this.checkBoxDownload = findViewById(R.id.checkBox);
+        this.checkBoxBollywood = findViewById(R.id.checkBox2);
+        this.btn = findViewById(R.id.button);
 
         this.requestUserStorageAccess();
+
+        this.checkBoxDownload.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(checkBoxDownload.isChecked()) {
+                    checkBoxBollywood.setChecked(false);
+                }
+            }
+        });
+
+        this.checkBoxBollywood.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(checkBoxBollywood.isChecked()) {
+                    checkBoxDownload.setChecked(false);
+                }
+            }
+        });
+
+        this.btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (checkBoxBollywood.isChecked() || checkBoxDownload.isChecked()) {
+                    readSongsFromExtDirectory();
+                }
+            }
+        });
     }
 
     private void requestUserStorageAccess() {
@@ -54,7 +92,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
                         // Toast.makeText(MainActivity.this, "Ext. Storage permission given", Toast.LENGTH_SHORT).show();
-                        readSongsFromExtDirectory();
+
+                        // This line would automatically load songs on activity start
+                        // readSongsFromExtDirectory();
                     }
 
                     @Override
@@ -75,16 +115,29 @@ public class MainActivity extends AppCompatActivity {
         Log.d("extStorage", "Dir is: " + Environment.getExternalStorageDirectory());
 
         this.rootDirectory = Environment.getExternalStorageDirectory();
-        this.customDirectory = new File(rootDirectory + "/Bollywood Songs");
+        // this.customDirectory = new File(rootDirectory + "/Bollywood Songs");
 
-        this.songsList = fetchSongs(customDirectory);
-        this.songNames = new String[songsList.size()];
-        for (int i = 0; i < songsList.size(); i++) {
-            this.songNames[i] = songsList.get(i).getName().replace(".mp3", "");
+        if (this.checkBoxDownload.isChecked()) {
+            this.checkBoxBollywood.setChecked(false);
+            this.customDirectory = new File(rootDirectory + "/" + DOWNLOAD);
+        } else if (this.checkBoxBollywood.isChecked()) {
+            this.checkBoxDownload.setChecked(false);
+            this.customDirectory = new File(rootDirectory + "/" + BOLLYWOOD);
         }
 
-        displaySongs();
-        setEventsOnListItem();
+        this.songsList = fetchSongs(customDirectory);
+
+        if(this.songsList.size() == 0) {
+            listView.setAdapter(null);
+            Toast.makeText(this, "No songs available", Toast.LENGTH_SHORT).show();
+        } else {
+            this.songNames = new String[songsList.size()];
+            for (int i = 0; i < songsList.size(); i++) {
+                this.songNames[i] = songsList.get(i).getName().replace(".mp3", "");
+            }
+            displaySongs();
+            setEventsOnListItem();
+        }
     }
 
 
